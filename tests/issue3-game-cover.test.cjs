@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const CoverImage = require('../cover-image.js');
 const Backup = require('../backup.js');
+const Domain = require('../domain.js');
 
 const root = path.resolve(__dirname, '..');
 const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
@@ -29,9 +30,18 @@ test('game editor uploads, replaces, removes, and renders local background image
   assert.match(gameForm, /name="coverUpload" accept="image\/jpeg,image\/png,image\/webp"/);
   assert.match(gameForm, /name="removeCover"/);
   assert.match(app, /CoverImage\.createCoverDataUrl\(coverUpload\)/);
-  assert.match(app, /else if\(removeCover\)delete obj\.coverImage/);
+  assert.match(app, /Domain\.removeGameCover\(nextData,id\|\|nextData\.games\[0\]\.id\)/);
   assert.match(app, /CoverImage\.isCoverDataUrl\(g\.coverImage\)/);
   assert.match(html, /<script src="cover-image\.js"><\/script>[\s\S]*?<script src="app\.js"><\/script>/);
+});
+
+test('removing a game cover clears it from the saved game without mutating prior data', () => {
+  const cover = `data:image/jpeg;base64,${Buffer.from('cover').toString('base64')}`;
+  const before = { games: [{ id: 'g1', name: '测试游戏', coverImage: cover }, { id: 'g2', name: '保留图片', coverImage: cover }] };
+  const after = Domain.removeGameCover(before, 'g1');
+  assert.equal(Object.hasOwn(after.games[0], 'coverImage'), false);
+  assert.equal(after.games[1].coverImage, cover);
+  assert.equal(before.games[0].coverImage, cover);
 });
 
 test('full JSON backup restores a game background data URL', async () => {

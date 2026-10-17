@@ -120,12 +120,13 @@
     showModal(title,body,submit,async form=>{
       const upload=form.fileUpload;delete form.fileUpload;
       const coverUpload=form.coverUpload instanceof File&&form.coverUpload.size?form.coverUpload:null;delete form.coverUpload;
-      const removeCover=form.removeCover==='on';delete form.removeCover;
+      const removeCover=Boolean(form.removeCover);delete form.removeCover;
       const obj={...item,...form};
       if(type==='version')obj.tags=(form.tags||'').split(/[,，]/).map(s=>s.trim()).filter(Boolean);
-      if(type==='game'){obj.cover=item.cover||'other';obj.short=item.short||form.name.toUpperCase().slice(0,20);if(coverUpload)obj.coverImage=await CoverImage.createCoverDataUrl(coverUpload);else if(removeCover)delete obj.coverImage}
+      if(type==='game'){obj.cover=item.cover||'other';obj.short=item.short||form.name.toUpperCase().slice(0,20);if(coverUpload)obj.coverImage=await CoverImage.createCoverDataUrl(coverUpload)}
       const collection=type==='video'?'videos':type==='article'?'articles':type==='resource'?'resources':type==='version'?'versions':'games';
-      const nextData=Domain.upsert(data,collection,obj,id||null);
+      let nextData=Domain.upsert(data,collection,obj,id||null);
+      if(type==='game'&&removeCover&&!coverUpload)nextData=Domain.removeGameCover(nextData,id||nextData.games[0].id);
       const saved=nextData[collection].find(record=>record.id===(id||nextData[collection][0].id));
       if(type==='resource'&&upload&&upload.size){
         const previousFile=await getLocalFile(saved.id);

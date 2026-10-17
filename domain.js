@@ -54,6 +54,17 @@
     return { ...data, [collection]: existing ? list.map((item) => item.id === record.id ? record : item) : [record, ...list] };
   }
 
+  function removeGameCover(data, gameId) {
+    return {
+      ...data,
+      games: (data.games || []).map((game) => {
+        if (game.id !== gameId) return game;
+        const { coverImage, ...withoutCover } = game;
+        return withoutCover;
+      }),
+    };
+  }
+
   function removeItem(data, collection, id) {
     if (!COLLECTIONS.includes(collection)) throw new TypeError(`Unknown collection: ${collection}`);
     const record = (data[collection] || []).find((item) => item.id === id);
@@ -158,7 +169,7 @@
       .slice(0, limit);
   }
 
-  const api = { COLLECTIONS, FAVORITABLE, makeId, normalize, upsert, removeItem, deleteGame, toggleFavorite, filterRecords, searchLibrary, stats, recentRecords };
+  const api = { COLLECTIONS, FAVORITABLE, makeId, normalize, upsert, removeGameCover, removeItem, deleteGame, toggleFavorite, filterRecords, searchLibrary, stats, recentRecords };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else global.ShiyouDomain = api;
 })(globalThis);

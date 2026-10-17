@@ -29,7 +29,7 @@ test('failed localStorage save happens before assigning the new app state', () =
   const toggle = app.slice(app.indexOf("case'toggle-compact'"), app.indexOf("case'toggle-compact'") + 280);
   assert.ok(save >= 0);
   assert.ok(toggle.indexOf('save(next)') < toggle.indexOf('data=next'));
-  const upsert = app.slice(app.indexOf('const nextData=Domain.upsert'), app.indexOf('function readArticle'));
+  const upsert = app.slice(app.indexOf('Domain.upsert(data,collection,obj,id||null)'), app.indexOf('function readArticle'));
   assert.ok(upsert.indexOf('save(nextData)') < upsert.indexOf('data=nextData'));
 });
 

@@ -14,7 +14,7 @@ const types = {
   '.json': 'application/json; charset=utf-8',
   '.md': 'text/markdown; charset=utf-8',
 };
-const allowedFiles = new Set(['index.html', 'styles.css', 'domain.js', 'backup.js', 'app.js']);
+const allowedFiles = new Set(['index.html', 'styles.css', 'domain.js', 'backup.js', 'cover-image.js', 'app.js']);
 
 createServer(async (request, response) => {
   let requestUrl;

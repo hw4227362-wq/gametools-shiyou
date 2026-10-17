@@ -60,6 +60,7 @@ test('the built-in server serves local app files and blocks traversal', async (t
   assert.match(await response.text(), /src="domain\.js"/);
   assert.equal((await fetch(`${base}/app.js`)).status, 200);
   assert.equal((await fetch(`${base}/backup.js`)).status, 200);
+  assert.equal((await fetch(`${base}/cover-image.js`)).status, 200);
   assert.equal((await fetch(`${base}/PRD.md`)).status, 404);
   assert.equal((await fetch(`${base}/api/video-metadata?url=${encodeURIComponent('https://example.com/video/BV1xx411c7mD')}`)).status, 400);
   assert.equal((await fetch(`${base}/video-metadata.cjs`)).status, 404);

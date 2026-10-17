@@ -113,6 +113,33 @@
     });
   }
 
+  function searchLibrary(data, query) {
+    const needle = String(query || '').trim().toLocaleLowerCase();
+    if (!needle) return [];
+    const gameById = new Map(data.games.map((item) => [item.id, item]));
+    const results = [];
+    for (const item of data.games) {
+      const searchable = [item.name, item.short, item.type, item.version, item.description].filter(Boolean).join(' ').toLocaleLowerCase();
+      if (searchable.includes(needle)) results.push({ type: 'games', id: item.id, gameId: item.id, title: item.name, detail: `${item.version || '版本未填写'} · 游戏分区` });
+    }
+    for (const type of ['videos', 'articles', 'resources', 'versions']) {
+      for (const item of data[type]) {
+        const owner = gameById.get(item.gameId);
+        const values = Object.values(item).flatMap((value) => Array.isArray(value) ? value : [value]).filter((value) => typeof value === 'string');
+        const searchable = [owner?.name, ...values].filter(Boolean).join(' ').toLocaleLowerCase();
+        if (!searchable.includes(needle)) continue;
+        results.push({
+          type,
+          id: item.id,
+          gameId: item.gameId,
+          title: item.title,
+          detail: [owner?.name, item.category || item.kind || item.creator || item.version, item.status].filter(Boolean).join(' · '),
+        });
+      }
+    }
+    return results;
+  }
+
   function stats(data) {
     return {
       games: data.games.length,
@@ -131,7 +158,7 @@
       .slice(0, limit);
   }
 
-  const api = { COLLECTIONS, FAVORITABLE, makeId, normalize, upsert, removeItem, deleteGame, toggleFavorite, filterRecords, stats, recentRecords };
+  const api = { COLLECTIONS, FAVORITABLE, makeId, normalize, upsert, removeItem, deleteGame, toggleFavorite, filterRecords, searchLibrary, stats, recentRecords };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else global.ShiyouDomain = api;
 })(globalThis);

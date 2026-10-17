@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { normalize, upsert, removeItem, deleteGame, toggleFavorite, filterRecords, stats, recentRecords } = require('../domain.js');
+const { normalize, upsert, removeItem, deleteGame, toggleFavorite, filterRecords, searchLibrary, stats, recentRecords } = require('../domain.js');
 
 const seed = { games: [], videos: [], articles: [], resources: [], versions: [], favorites: [], settings: { compact: false } };
 const record = (id, gameId, extra = {}) => ({ id, gameId, title: id, createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z', ...extra });
@@ -75,4 +75,21 @@ test('search and filters combine and stats/recent data derive from source record
   assert.deepEqual(filterRecords([...data.videos, ...data.articles], { gameId: 'g1', query: 'build', category: 'Guide' }).map((x) => x.id), ['a1']);
   assert.deepEqual(stats(data), { games: 1, guides: 2, videos: 1, articles: 1, resources: 1, versions: 0, favorites: 1 });
   assert.equal(recentRecords(data, 1)[0].id, 'a1');
+});
+
+test('global library search by game name returns that game and all related record types', () => {
+  const data = {
+    ...seed,
+    games: [record('genshin', null, { name: '原神', version: '6.0', type: '开放世界' }), record('hsr', null, { name: '崩坏：星穹铁道' })],
+    videos: [record('v1', 'genshin', { title: '深渊讲解', creator: '攻略作者' }), record('v2', 'hsr', { title: '忘却之庭' })],
+    articles: [record('a1', 'genshin', { title: '开荒路线', category: '养成攻略' })],
+    resources: [record('r1', 'genshin', { title: '地图清单', kind: '表格' })],
+    versions: [record('p1', 'genshin', { title: '新区域预览', version: '6.0', tags: ['地图'] })],
+  };
+  const results = searchLibrary(data, ' 原神 ');
+  assert.deepEqual(results.map((item) => item.type), ['games', 'videos', 'articles', 'resources', 'versions']);
+  assert.ok(results.every((item) => item.gameId === 'genshin'));
+  assert.deepEqual(searchLibrary(data, ''), []);
+  assert.deepEqual(searchLibrary(data, '崩坏：星穹铁道').map((item) => item.id), ['hsr', 'v2']);
+  assert.deepEqual(searchLibrary(data, '攻略作者').map((item) => item.id), ['v1']);
 });

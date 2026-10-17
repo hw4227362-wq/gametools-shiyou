@@ -23,8 +23,16 @@ test('the app JavaScript parses before any feature tests run', () => {
 
 test('the Windows launcher binds its local server to loopback only', () => {
   const launcher = read('启动拾游.bat');
-  assert.match(launcher, /node server\.mjs/i);
-  assert.match(launcher, /127\.0\.0\.1:8765/);
+  const startup = read('启动拾游.ps1');
+  assert.match(launcher, /-File "%~dp0启动拾游\.ps1"/i);
+  assert.match(startup, /node server\.mjs/i);
+  assert.match(startup, /127\.0\.0\.1:8765/);
+  assert.match(startup, /AddSeconds\(20\)/);
+  assert.match(startup, /Invoke-WebRequest/);
+  assert.match(startup, /<title>拾游/);
+  assert.match(launcher, /start "" "http:\/\/127\.0\.0\.1:8765"/);
+  assert.ok(launcher.indexOf('-File "%~dp0启动拾游.ps1"') < launcher.indexOf('start "" "http://127.0.0.1:8765"'), 'browser must open only after the readiness check succeeds');
+  assert.match(startup, /服务在 20 秒内没有就绪/);
 });
 
 test('all eight PRD modules have navigation entries', () => {

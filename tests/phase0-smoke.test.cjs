@@ -24,8 +24,13 @@ test('the app JavaScript parses before any feature tests run', () => {
 test('the Windows launcher binds its local server to loopback only', () => {
   const launcher = read('启动拾游.bat');
   const startup = read('启动拾游.ps1');
-  assert.match(launcher, /-File "%~dp0启动拾游\.ps1"/i);
-  assert.match(startup, /node server\.mjs/i);
+  assert.match(launcher, /WindowsPowerShell\\v1\.0\\powershell\.exe.*-File "%~dp0启动拾游\.ps1"/i);
+  assert.doesNotMatch(launcher, /where node/i, 'the batch file must not reject a runtime that is available outside PATH');
+  assert.match(startup, /-ArgumentList 'server\.mjs'/i);
+  assert.match(startup, /function Find-NodeRuntime/);
+  assert.match(startup, /Get-Command node/);
+  assert.match(startup, /\.cache\\codex-runtimes/);
+  assert.match(startup, /Programs\\nodejs\\node\.exe/);
   assert.match(startup, /127\.0\.0\.1:8765/);
   assert.match(startup, /AddSeconds\(20\)/);
   assert.match(startup, /Invoke-WebRequest/);

@@ -16,7 +16,8 @@ const types = {
 };
 const allowedFiles = new Set(['index.html', 'styles.css', 'domain.js', 'backup.js', 'cover-image.js', 'video-player.js', 'app.js']);
 
-createServer(async (request, response) => {
+export function createShiyouServer() {
+  return createServer(async (request, response) => {
   let requestUrl;
   try { requestUrl = new URL(request.url, 'http://127.0.0.1'); }
   catch { response.writeHead(400).end('Bad request'); return; }
@@ -71,4 +72,25 @@ createServer(async (request, response) => {
   } catch (error) {
     response.writeHead(error.code === 'ENOENT' ? 404 : 500).end(error.code === 'ENOENT' ? 'Not found' : 'Server error');
   }
-}).listen(port, '127.0.0.1', () => process.stdout.write(`Shiyou local app: http://127.0.0.1:${port}\n`));
+  });
+}
+
+export function listenShiyouServer({ listenPort = port, host = '127.0.0.1', log = true } = {}) {
+  const server = createShiyouServer();
+  return new Promise((resolve, reject) => {
+    const onError = error => reject(error);
+    server.once('error', onError);
+    server.listen(listenPort, host, () => {
+      server.off('error', onError);
+      if (log) process.stdout.write(`Shiyou local app: http://${host}:${listenPort}\n`);
+      resolve(server);
+    });
+  });
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  listenShiyouServer().catch(error => {
+    process.stderr.write(`Unable to start Shiyou local server: ${error.message}\n`);
+    process.exitCode = 1;
+  });
+}

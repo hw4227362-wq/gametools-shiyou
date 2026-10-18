@@ -1,0 +1,20 @@
+{
+  "name": "shiyou-desktop",
+  "productName": "拾游",
+  "version": "1.0.0",
+  "private": true,
+  "description": "个人本地游戏攻略资料库桌面版",
+  "author": "奇幻小叮当",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "pack:win": "electron-packager . 拾游 --platform=win32 --arch=x64 --out=release --overwrite --executable-name=拾游 --asar"
+  },
+  "devDependencies": {
+    "electron": "^44.9.0",
+    "@electron/packager": "^19.0.0"
+  },
+  "allowScripts": {
+    "electron@44.9.0": true
+  }
+}
